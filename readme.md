@@ -1,7 +1,6 @@
 # Software Oscilloscope
-A ongoing python project which takes in data from a serial port and plots a graph using matplotlib
+An ongoing python project which takes in data from a serial port and plot graphs using matplotlib
 
-==================================================================
 ## Installation
 * Requires Python 2
 * Clone the repo or download the zip
@@ -13,6 +12,9 @@ A ongoing python project which takes in data from a serial port and plots a grap
 * matplotlib 
 * numpy
 * pySerial
+
+### Screenshots
+![alt tag](http://i.imgur.com/wbPearX.jpg)
 
 ### Contributions
 If you want to add features, improve them, or report issues, feel free to send a pull request!
