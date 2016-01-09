@@ -7,7 +7,7 @@ from collections import deque
 import serial,time
 
 resolution = 25
-Port = serial.Serial('COM15',115200,timeout = None,bytesize = 8,parity = 'N',stopbits = 1,xonxoff = 0,rtscts = 0)
+Port = serial.Serial('COM27',9600,timeout = None,bytesize = 8,parity = 'N',stopbits = 1,xonxoff = 0,rtscts = 0)
 fig = plt.figure()
 ax = plt.axes(xlim = (0,resolution),ylim = (0,25))	#Defining limits
 line, = ax.plot([],[])
