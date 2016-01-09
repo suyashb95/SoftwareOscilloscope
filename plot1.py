@@ -18,7 +18,7 @@ Ydata = deque([0.000]*resolution, maxlen = resolution) 	#Doubly ended queue, ini
 def init():
 	line.set_data([],[]) #Plot empty line first
 	#line2.set_data([],[])
-	return line
+	return line, 
 	
 def animate(fn,line,Ydata):
 	data1 = Port.readline().rstrip()
@@ -40,10 +40,11 @@ def animate(fn,line,Ydata):
 		animate.count = 0;
 		for i in range(5):
 			Port.readline().rstrip()
+	return line, 
 
 animate.count = 0;		
 		
-anim = animation.FuncAnimation(fig,animate,fargs = (line,Ydata),init_func = init, interval = 1,blit = False)
+anim = animation.FuncAnimation(fig,animate,fargs = (line,Ydata),init_func = init, interval = 1,blit = True)
 try:
 	plt.show()
 except KeyboardInterrupt or Exception:
