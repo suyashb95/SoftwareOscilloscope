@@ -5,12 +5,10 @@ import numpy as np
 
 class Oscilloscope(object):
     def __init__(self, com_port, baud_rate):
-        try:
-            self.port = serial.Serial(com_port, baud_rate)
-        except serial.SerialException, e:
-            print e
-            return
+        self.serial_args = (com_port, baud_rate)
+        self.port = None
         self.fig = plt.figure()
+        self.fig.canvas.mpl_connect('close_event', self.handle_close)
         self.plot_list = []
         
     def plot_init(self):
@@ -35,26 +33,35 @@ class Oscilloscope(object):
             try:
                 if(read_size < plot[0].get_ylim()):
                     plot[1]._yorig = np.roll(plot[1]._yorig, -read_size)
-                    plot[1]._yorig[-read_size:] = float(data)
+                    plot[1]._yorig[-read_size:] = data
                 else:
-                    plot[1]._yorig = float(data)
+                    plot[1]._yorig = data
                 plot[1]._invalidy = True
                 #plot[0].relim()
                 #plot[0].autoscale()
             except ValueError:
                 pass
         return [x[1] for x in self.plot_list]
-        
+
+    def handle_close(self, evt):
+        self.close_stream()
+     
+    def close_stream(self):
+        self.port.flushInput()
+        self.port.flushOutput()
+        self.port.close()
+        print "Port closed"
+          
     def start(self, read_size=1):
-        animated_plot = animation.FuncAnimation(self.fig, 
-                                                self.plot_animate, 
-                                                fargs = (read_size),
-                                                init_func=self.plot_init,
-                                                interval=10,
-                                                blit=True)
+        self.port = serial.Serial(self.serial_args[0], self.serial_args[1])
+        animated_plot = animation.FuncAnimation(
+            self.fig, 
+            self.plot_animate, 
+            fargs = (read_size, ),
+            init_func=self.plot_init,
+            interval=1,
+            blit=True)
         try:
-            plt.show()
-        except KeyboardInterrupt or Exception:
-            self.port.flushInput()
-            self.port.flushOutput()
-            self.port.close()
+            self.fig.show()
+        except:
+            self.close_stream()
