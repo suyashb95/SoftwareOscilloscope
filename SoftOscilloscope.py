@@ -26,12 +26,18 @@ class Oscilloscope(object):
             self.plot_list.append([ax, line, data])
         return [x[1] for x in self.plot_list]
         
-    def plot_animate(self, fn):
-        serial_data = self.port.readline().rstrip().split() 
+    def plot_animate(self, fn, read_size=1):
+        serial_data = []
+        for _ in xrange(read_size):
+            serial_data.append(self.port.readline().rstrip().split())
+        serial_data = np.array(serial_data).T 
         for data, plot in zip(serial_data, self.plot_list):
             try:
-                plot[1]._yorig = np.roll(plot[1]._yorig, -1)
-                plot[1]._yorig[-1] = float(data)
+                if(read_size < plot[0].get_ylim()):
+                    plot[1]._yorig = np.roll(plot[1]._yorig, -read_size)
+                    plot[1]._yorig[-read_size:] = float(data)
+                else:
+                    plot[1]._yorig = float(data)
                 plot[1]._invalidy = True
                 #plot[0].relim()
                 #plot[0].autoscale()
@@ -39,9 +45,10 @@ class Oscilloscope(object):
                 pass
         return [x[1] for x in self.plot_list]
         
-    def start(self):
+    def start(self, read_size=1):
         animated_plot = animation.FuncAnimation(self.fig, 
                                                 self.plot_animate, 
+                                                fargs = (read_size),
                                                 init_func=self.plot_init,
                                                 interval=10,
                                                 blit=True)
