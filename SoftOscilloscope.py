@@ -69,7 +69,6 @@ class BasePlot(object):
                 init_func=self.plot_init,
                 interval=20,
                 blit=True)
-            animated_plot.save('test.mp4')
             plt.show()
         except Exception, message:
             print message
