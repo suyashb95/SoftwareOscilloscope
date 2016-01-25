@@ -1,5 +1,7 @@
 # Software Oscilloscope
-An ongoing python project which takes in data from a serial port and plot graphs using matplotlib
+An ongoing python project which takes in data from any stream(Serial port, TCP socket or any generic stream)
+and plot it in real time using matplotlib. The stream must implement open(), close() and readline() methods 
+to work with the package.
 
 ## Installation
 * Requires Python 2
@@ -13,8 +15,11 @@ An ongoing python project which takes in data from a serial port and plot graphs
 * numpy
 * pySerial
 
-### Screenshots
-![alt tag](http://i.imgur.com/wbPearX.jpg)
+Serial                                      |  Socket 
+:------------------------------------------:|:-------------------------------------------:
+![alt tag](http://i.imgur.com/OWu5wBS.gif)  |![alt tag](http://i.imgur.com/xwUVAz4.gif)
+Plotting data from an Ultrasonic sensor     |  Plotting a sine wave from a TCP socket
+
 
 ### Contributions
 If you want to add features, improve them, or report issues, feel free to send a pull request!

@@ -2,12 +2,14 @@ import serial, multiprocessing, socket
 import matplotlib.pyplot as plt
 from matplotlib import animation
 import numpy as np
+import matplotlib
+matplotlib.use('TkAgg')
             
 class BasePlot(object):
     def __init__(self, stream):
         self.stream = stream
         self.fig = plt.figure()
-        self.fig.canvas.mpl_connect('close_event', self.handle_close)
+        self.fig.canvas.mpl_connect('close_event', self.handle_close_event)
         self.plot_list = []
                 
     def open_stream(self):
@@ -27,14 +29,14 @@ class BasePlot(object):
     def plot_init(self):
         trial_data = self.stream.readline().rstrip().split()
         for i in xrange(1, len(trial_data) + 1):
-            ax = self.fig.add_subplot(len(trial_data), 1, i)
-            ax.set_xlim(0, 50, auto=False)
-            ax.set_ylim(0, 100, auto=False)
-            ax.grid(True)
-            data = np.zeros(50)
-            line, = ax.plot([], [], animated=True)
-            line.set_data(np.arange(50), data)
-            self.plot_list.append([ax, line, data])
+            axes = self.fig.add_subplot(len(trial_data), 1, i)
+            axes.set_xlim(0, 50, auto=False)
+            axes.set_ylim(-50, 50, auto=False)
+            axes.grid(True)
+            line_data = np.zeros(50)
+            line, = axes.plot([], [], animated=True)
+            line.set_data(np.arange(50), line_data)
+            self.plot_list.append([axes, line, line_data])
         return [x[1] for x in self.plot_list]
         
     def plot_animate(self, fn, read_size=1):
@@ -58,24 +60,26 @@ class BasePlot(object):
         return [x[1] for x in self.plot_list]
  
     def start(self, read_size=1):
-        self.open_stream()
-        animated_plot = animation.FuncAnimation(
-            self.fig, 
-            self.plot_animate, 
-            fargs = (read_size, ),
-            init_func=self.plot_init,
-            interval=1,
-            blit=True)
         try:
-            self.fig.show()
-        except:
+            self.open_stream()
+            animated_plot = animation.FuncAnimation(
+                self.fig, 
+                self.plot_animate, 
+                fargs = (read_size, ),
+                init_func=self.plot_init,
+                interval=20,
+                blit=True)
+            animated_plot.save('test.mp4')
+            plt.show()
+        except Exception, message:
+            print message
             self.close_stream()       
 
 class SerialPlot(BasePlot):
     def __init__(self, com_port, baud_rate):
         self.serial_port = serial.Serial()
         self.serial_port.baud_rate = baud_rate
-        self.serial_port.com_port = com_port
+        self.serial_port.port = com_port
         super(SerialPlot, self).__init__(self.serial_port)
         
            
@@ -83,13 +87,17 @@ class SocketPlot(BasePlot):
     def __init__(self, address, port):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.settimeout(5)
+        self.socket_params = (address, port)
         self.socket.connect((address, port))
         super(SocketPlot, self).__init__(self.socket.makefile())
         
     def open_stream(self):
-        self.socket.connect((address, port))
-        self.socket.settimeout(5)
-        self.stream = self.socket.makefile()
+        try:
+            self.socket.connect(self.socket_params)
+            self.socket.settimeout(5)
+            self.stream = self.socket.makefile()
+        except:
+            pass
         
 class GenericStreamPlot(BasePlot):
     def __init__(self, stream):
