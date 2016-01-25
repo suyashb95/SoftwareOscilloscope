@@ -15,6 +15,8 @@ to work with the package.
 * numpy
 * pySerial
 
+### Demos
+
 Serial                                      |  Socket 
 :------------------------------------------:|:-------------------------------------------:
 ![alt tag](http://i.imgur.com/OWu5wBS.gif)  |![alt tag](http://i.imgur.com/xwUVAz4.gif)

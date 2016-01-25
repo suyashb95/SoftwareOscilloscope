@@ -54,7 +54,7 @@ class BasePlot(object):
                 plot[1]._invalidy = True
             except ValueError:
                 pass
-            except error, message:
+            except Exception, message:
                 print message
                 return
         return [x[1] for x in self.plot_list]
