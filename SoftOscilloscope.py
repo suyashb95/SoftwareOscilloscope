@@ -6,12 +6,17 @@ import matplotlib
 matplotlib.use('TkAgg')
             
 class BasePlot(object):
-    def __init__(self, stream):
+    def __init__(self, stream, **kwargs):
         self.stream = stream
         self.fig = plt.figure()
         self.fig.canvas.mpl_connect('close_event', self.handle_close_event)
         self.plot_list = []
-                
+        self.xlim = kwargs.get('xlim', (0, 500))
+        self.ylim = kwargs.get('ylim', (-100, 100))
+        self.interval = kwargs.get('interval', 1)
+        self.read_size = kwargs.get('read_size', 1)
+        self.autoscale = kwargs.get('autoscale', True)
+
     def open_stream(self):
         self.stream.open()
         
@@ -30,25 +35,26 @@ class BasePlot(object):
         trial_data = self.stream.readline().rstrip().split()
         for i in xrange(1, len(trial_data) + 1):
             axes = self.fig.add_subplot(len(trial_data), 1, i)
-            axes.set_xlim(0, 50, auto=False)
-            axes.set_ylim(-50, 50, auto=False)
+            axes.set_xlim(self.xlim[0], self.xlim[1], auto=self.autoscale)
+            axes.set_ylim(self.ylim[0], self.ylim[1], auto=self.autoscale)
             axes.grid(True)
-            line_data = np.zeros(50)
+            line_data = np.zeros(self.xlim[1])
             line, = axes.plot([], [], animated=True)
-            line.set_data(np.arange(50), line_data)
+            line.set_data(np.arange(self.xlim[1]), line_data)
             self.plot_list.append([axes, line, line_data])
         return [x[1] for x in self.plot_list]
         
-    def plot_animate(self, fn, read_size=1):
+    def plot_animate(self, fn):
         stream_data = []
-        for _ in xrange(read_size):
+        for _ in xrange(self.read_size):
             stream_data.append(self.stream.readline().rstrip().split())
         stream_data = np.array(stream_data).T 
+        print stream_data
         for data, plot in zip(stream_data, self.plot_list):
             try:
-                if(read_size < plot[0].get_ylim()):
-                    plot[1]._yorig = np.roll(plot[1]._yorig, -read_size)
-                    plot[1]._yorig[-read_size:] = data
+                if(sef.read_size < plot[0].get_ylim()):
+                    plot[1]._yorig = np.roll(plot[1]._yorig, -self.read_size)
+                    plot[1]._yorig[-self.read_size:] = data
                 else:
                     plot[1]._yorig = data
                 plot[1]._invalidy = True
@@ -56,18 +62,16 @@ class BasePlot(object):
                 pass
             except Exception, message:
                 print message
-                return
-        return [x[1] for x in self.plot_list]
+                return [x[1] for x in self.plot_list]
  
-    def start(self, read_size=1):
+    def start(self):
         try:
             self.open_stream()
             animated_plot = animation.FuncAnimation(
                 self.fig, 
                 self.plot_animate, 
-                fargs = (read_size, ),
                 init_func=self.plot_init,
-                interval=20,
+                interval=1,
                 blit=True)
             plt.show()
         except Exception, message:
@@ -98,11 +102,11 @@ class SocketPlot(BasePlot):
         except:
             pass
         
-class GenericStreamPlot(BasePlot):
+class GenericPlot(BasePlot):
     def __init__(self, stream):
         if hasattr(stream, 'open') \
         and hasattr(stream, 'close') \
         and hasattr(stream, 'readline'):
-            super(GenericStreamPlot, self).__init__(stream)
+            super(GenericPlot, self).__init__(stream)
         else:
             raise BadAttributeError("One of the open/close/readline attributes is missing")           
