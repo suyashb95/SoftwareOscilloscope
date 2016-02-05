@@ -35,11 +35,12 @@ class BasePlot(object):
         trial_data = self.stream.readline().rstrip().split()
         for i in xrange(1, len(trial_data) + 1):
             axes = self.fig.add_subplot(len(trial_data), 1, i)
-            axes.set_xlim(self.xlim[0], self.xlim[1], auto=self.autoscale)
-            axes.set_ylim(self.ylim[0], self.ylim[1], auto=self.autoscale)
+            axes.set_xlim(self.xlim[0], self.xlim[1])
+            axes.set_ylim(self.ylim[0], self.ylim[1])
+            axes.autoscale(axis='y')
             axes.grid(True)
             line_data = np.zeros(self.xlim[1])
-            line, = axes.plot([], [], animated=True)
+            line, = axes.plot([], [])
             line.set_data(np.arange(self.xlim[1]), line_data)
             self.plot_list.append([axes, line, line_data])
         return [x[1] for x in self.plot_list]
@@ -49,10 +50,11 @@ class BasePlot(object):
         for _ in xrange(self.read_size):
             stream_data.append(self.stream.readline().rstrip().split())
         stream_data = np.array(stream_data).T 
-        print stream_data
         for data, plot in zip(stream_data, self.plot_list):
+            plot[0].relim()
+            plot[0].autoscale_view()
             try:
-                if(sef.read_size < plot[0].get_ylim()):
+                if(self.read_size < plot[0].get_ylim()):
                     plot[1]._yorig = np.roll(plot[1]._yorig, -self.read_size)
                     plot[1]._yorig[-self.read_size:] = data
                 else:
@@ -62,7 +64,8 @@ class BasePlot(object):
                 pass
             except Exception, message:
                 print message
-                return [x[1] for x in self.plot_list]
+                return  
+        return [x[1] for x in self.plot_list]
  
     def start(self):
         try:
@@ -72,8 +75,8 @@ class BasePlot(object):
                 self.plot_animate, 
                 init_func=self.plot_init,
                 interval=1,
-                blit=True)
-            plt.show()
+                blit=False)
+            self.fig.show()
         except Exception, message:
             print message
             self.close_stream()       
@@ -102,6 +105,10 @@ class SocketPlot(BasePlot):
         except:
             pass
         
+    def close_stream(self):
+        self.socket.close()
+        return
+
 class GenericPlot(BasePlot):
     def __init__(self, stream):
         if hasattr(stream, 'open') \
