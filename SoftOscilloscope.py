@@ -4,13 +4,15 @@ from matplotlib import animation
 import numpy as np
 import matplotlib
 matplotlib.use('TkAgg')
-            
+
 class BasePlot(object):
     def __init__(self, stream, **kwargs):
         self.stream = stream
         self.fig = plt.figure()
         self.fig.canvas.mpl_connect('close_event', self.handle_close_event)
         self.plot_list = []
+        self.redraw_list = []
+        self.stream_data = None      
         self.xlim = kwargs.get('xlim', (0, 500))
         self.ylim = kwargs.get('ylim', (-100, 100))
         self.interval = kwargs.get('interval', 1)
@@ -37,20 +39,20 @@ class BasePlot(object):
             axes = self.fig.add_subplot(len(trial_data), 1, i)
             axes.set_xlim(self.xlim[0], self.xlim[1])
             axes.set_ylim(self.ylim[0], self.ylim[1])
-            axes.autoscale(axis='y')
+            axes.autoscale(enable=self.autoscale, axis='y')
             axes.grid(True)
             line_data = np.zeros(self.xlim[1])
             line, = axes.plot([], [])
             line.set_data(np.arange(self.xlim[1]), line_data)
             self.plot_list.append([axes, line, line_data])
-        return [x[1] for x in self.plot_list]
+        self.stream_data = np.empty([len(trial_data), self.read_size])
+        self.redraw_list = [x[1] for x in self.plot_list]
+        return self.redraw_list
         
     def plot_animate(self, fn):
-        stream_data = []
-        for _ in xrange(self.read_size):
-            stream_data.append(self.stream.readline().rstrip().split())
-        stream_data = np.array(stream_data).T 
-        for data, plot in zip(stream_data, self.plot_list):
+        for index in xrange(self.read_size):
+            self.stream_data[:,index] = self.stream.readline().rstrip().split()
+        for data, plot in zip(self.stream_data, self.plot_list):
             plot[0].relim()
             plot[0].autoscale_view()
             try:
@@ -64,8 +66,8 @@ class BasePlot(object):
                 pass
             except Exception, message:
                 print message
-                return  
-        return [x[1] for x in self.plot_list]
+                return 
+        return self.redraw_list
  
     def start(self):
         try:
@@ -74,8 +76,8 @@ class BasePlot(object):
                 self.fig, 
                 self.plot_animate, 
                 init_func=self.plot_init,
-                interval=1,
-                blit=False)
+                interval=self.interval,
+                blit=not self.autoscale)
             self.fig.show()
         except Exception, message:
             print message
@@ -107,6 +109,7 @@ class SocketPlot(BasePlot):
         
     def close_stream(self):
         self.socket.close()
+        self.stream.close()
         return
 
 class GenericPlot(BasePlot):
