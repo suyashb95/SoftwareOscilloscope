@@ -31,6 +31,14 @@ Run SocketPlot-Test.py on a different console window
 >>>plot.start()
 
 '''
+
+Example for serial plots
+'''
+>>>from SoftOscilloscope import SerialPlot
+>>>plot = SerialPlot('COM_PORT_NUMBER', BAUD_RATE)
+>>>plot.start()
+
+'''
 Takes a generic stream and sets custom parameters
 '''
 >>>from SoftOscilloscope import GenericStreamPlot
