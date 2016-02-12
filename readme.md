@@ -17,10 +17,10 @@ to work with the package.
 ### Usage
 * The stream has to implement open(), close() and readline() methods
 * Data from multiple sources has to be space separated and each reading  must be on a new line
-Example: source1_value1 source2_value1 
-	 source1_value2 source2_value2
-	 and so on
-* X/Y axis limits,  Frame interval, Autoscaling(True by default) and the number of lines(1 by default) to read can be specified via kwargs.
+  source1_value1 source2_value1</br>
+  source1_value2 source2_value2</br>
+  and so on
+* X/Y axis limits,  Frame interval, Autoscaling(True by default) and the number of lines(1 by default) to read can be specified via     kwargs.
 ```python
 '''
 Uses the SocketPlot-Test example to plot a sine wave.
