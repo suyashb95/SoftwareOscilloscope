@@ -1,6 +1,5 @@
 # Software Oscilloscope
-An ongoing python project which takes in data from any stream(Serial port, TCP socket or any generic stream)
-and plot it in real time using matplotlib. The stream must implement open(), close() and readline() methods 
+An ongoing python project which takes in data from any stream(Serial port, TCP socket or any generic stream) and plot it in real time using matplotlib. The stream must implement open(), close() and readline() methods 
 to work with the package.
 
 ## Installation
@@ -14,6 +13,36 @@ to work with the package.
 * matplotlib 
 * numpy
 * pySerial
+
+### Usage
+* The stream has to implement open(), close() and readline() methods
+* Data from multiple sources has to be space separated and each reading  must be on a new line
+source1_value1 source2_value1 
+source1_value2 source2_value2
+and so on
+* X/Y axis limits,  Frame interval, Autoscaling(True by default) and the number of lines(1 by default) to read can be specified via kwargs.
+```python
+'''
+Uses the SocketPlot-Test example to plot a sine wave.
+Run SocketPlot-Test.py on a different console window
+'''
+>>>from SoftOscilloscope import SocketPlot
+>>>plot = SocketPlot('localhost', 5000)
+>>>plot.start()
+
+'''
+Takes a generic stream and sets custom parameters
+'''
+>>>from SoftOscilloscope import GenericStreamPlot
+>>>plot = GenericStreamPlot(
+	myStream, 
+	xlim=(-100,100),
+	ylim=(-50, 50),
+	interval=1, 
+	autoscale=False,
+	read_size=1)
+>>>plot.start()
+```
 
 ### Demos
 

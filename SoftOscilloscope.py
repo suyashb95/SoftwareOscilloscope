@@ -54,9 +54,9 @@ class BasePlot(object):
             self.stream_data[:,index] = self.stream.readline().rstrip().split()
         for data, plot in zip(self.stream_data, self.plot_list):
             plot[0].relim()
-            plot[0].autoscale_view()
+            plot[0].autoscale_view(tight=True)
             try:
-                if(self.read_size < plot[0].get_ylim()):
+                if(self.read_size < plot[0].get_xlim()[1]):
                     plot[1]._yorig = np.roll(plot[1]._yorig, -self.read_size)
                     plot[1]._yorig[-self.read_size:] = data
                 else:
@@ -84,20 +84,20 @@ class BasePlot(object):
             self.close_stream()       
 
 class SerialPlot(BasePlot):
-    def __init__(self, com_port, baud_rate):
+    def __init__(self, com_port, baud_rate, **kwargs):
         self.serial_port = serial.Serial()
         self.serial_port.baud_rate = baud_rate
         self.serial_port.port = com_port
-        super(SerialPlot, self).__init__(self.serial_port)
+        super(SerialPlot, self).__init__(self.serial_port, **kwargs)
         
            
 class SocketPlot(BasePlot):
-    def __init__(self, address, port):
+    def __init__(self, address, port, **kwargs):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.settimeout(5)
         self.socket_params = (address, port)
         self.socket.connect((address, port))
-        super(SocketPlot, self).__init__(self.socket.makefile())
+        super(SocketPlot, self).__init__(self.socket.makefile(), **kwargs)
         
     def open_stream(self):
         try:
@@ -113,10 +113,10 @@ class SocketPlot(BasePlot):
         return
 
 class GenericPlot(BasePlot):
-    def __init__(self, stream):
+    def __init__(self, stream, **kwargs):
         if hasattr(stream, 'open') \
         and hasattr(stream, 'close') \
         and hasattr(stream, 'readline'):
-            super(GenericPlot, self).__init__(stream)
+            super(GenericPlot, self).__init__(stream, **kwargs)
         else:
             raise BadAttributeError("One of the open/close/readline attributes is missing")           
