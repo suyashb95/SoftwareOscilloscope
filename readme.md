@@ -16,7 +16,7 @@ to work with the package.
 
 ### Usage
 * The stream has to implement open(), close() and readline() methods
-* Data from multiple sources has to be space separated and each reading  must be on a new line
+* Data from multiple sources has to be space separated and each reading  must be on a new line</br>
   source1_value1 source2_value1</br>
   source1_value2 source2_value2</br>
   and so on
