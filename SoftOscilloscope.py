@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib import animation
 import numpy as np
 import matplotlib
+from utils import ClientHandler
 matplotlib.use('TkAgg')
 
 class BasePlot(object):
@@ -28,7 +29,7 @@ class BasePlot(object):
         if hasattr(self.stream, 'flushOutput'):
             self.stream.flushOutput()
         self.stream.close()
-        print "stream closed"
+        print "Stream closed"
         
     def handle_close_event(self, event):
         self.close_stream()
@@ -89,28 +90,26 @@ class SerialPlot(BasePlot):
         self.serial_port.baud_rate = baud_rate
         self.serial_port.port = com_port
         super(SerialPlot, self).__init__(self.serial_port, **kwargs)
-        
-           
-class SocketPlot(BasePlot):
-    def __init__(self, address, port, **kwargs):
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.settimeout(5)
-        self.socket_params = (address, port)
-        self.socket.connect((address, port))
-        super(SocketPlot, self).__init__(self.socket.makefile(), **kwargs)
+
+class SocketClientPlot(BasePlot):
+    def __init__(self, address, port, socket=None, **kwargs):
+        if not socket:
+            self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.socket.settimeout(5)
+            self.socket_params = (address, port)
+            self.socket.connect((address, port))
+        else:
+            self.socket_params = address
+            self.socket = socket  
+        self.stream = self.socket.makefile()  
+        super(SocketPlot, self).__init__(self.stream, **kwargs)
         
     def open_stream(self):
-        try:
-            self.socket.connect(self.socket_params)
-            self.socket.settimeout(5)
-            self.stream = self.socket.makefile()
-        except:
-            pass
+        pass
         
     def close_stream(self):
         self.socket.close()
         self.stream.close()
-        return
 
 class GenericPlot(BasePlot):
     def __init__(self, stream, **kwargs):
@@ -119,4 +118,4 @@ class GenericPlot(BasePlot):
         and hasattr(stream, 'readline'):
             super(GenericPlot, self).__init__(stream, **kwargs)
         else:
-            raise BadAttributeError("One of the open/close/readline attributes is missing")           
+            raise BadAttributeError("One of the open/close/readline attributes is missing")  
