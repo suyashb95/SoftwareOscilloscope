@@ -27,7 +27,7 @@ Uses the SocketPlot-Test example to plot a sine wave.
 Run SocketPlot-Test.py on a different console window
 '''
 >>>from SoftOscilloscope import SocketClientPlot
->>>plot = SocketPlot('localhost', 5000)
+>>>plot = SocketClientPlot('localhost', 5000)
 >>>plot.start()
 
 '''
