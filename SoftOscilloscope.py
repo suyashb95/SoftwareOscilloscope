@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 from matplotlib import animation
 import numpy as np
 import matplotlib
-from utils import ClientHandler
 matplotlib.use('TkAgg')
 
 class BasePlot(object):
