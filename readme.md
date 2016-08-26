@@ -1,5 +1,5 @@
 # Software Oscilloscope
-An ongoing python project which takes in data from any stream(Serial port, TCP socket or any generic stream) and plot it in real time using matplotlib. The stream must implement open(), close() and readline() methods 
+An ongoing python project which takes in data from any stream(Serial port, TCP socket or any generic stream) and plot it in real time using PyQtGraph. The stream must implement open(), close() and readline() methods 
 to work with the package.
 
 ## Installation
@@ -10,7 +10,8 @@ to work with the package.
 * run `pip -install -r "requirements.txt"`
   
 ### Dependencies
-* matplotlib 
+* pyqtgraph
+* PySide or PyQt 4.8+ 
 * numpy
 * pySerial
 
@@ -54,10 +55,9 @@ Takes a generic stream and sets custom parameters
 
 ### Demos
 
-Serial                                      |  Socket 
-:------------------------------------------:|:-------------------------------------------:
-![alt tag](http://i.imgur.com/OWu5wBS.gif)  |![alt tag](http://i.imgur.com/xwUVAz4.gif)
-Plotting data from an Ultrasonic sensor     |  Plotting a sine wave from a TCP socket
+Serial Plot
+![alt tag](http://imgur.com/zu63yun.gif)  
+Plotting x,y,z data from a 9DOF IMU     
 
 
 ### Contributions
