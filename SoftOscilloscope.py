@@ -1,23 +1,19 @@
-import serial, multiprocessing, socket
-import matplotlib.pyplot as plt
-from matplotlib import animation
+import serial, socket, sys
+from pyqtgraph.Qt import QtGui, QtCore
+import pyqtgraph as pg
 import numpy as np
-import matplotlib
-matplotlib.use('TkAgg')
 
 class BasePlot(object):
     def __init__(self, stream, **kwargs):
         self.stream = stream
-        self.fig = plt.figure()
-        self.fig.canvas.mpl_connect('close_event', self.handle_close_event)
+        self.app = QtGui.QApplication([])
+        self.view = pg.GraphicsView()
+        self.layout = pg.GraphicsLayout(border=(100,100,100))
+        self.view.setCentralItem(self.layout)
+        self.view.show()
+        self.view.setWindowTitle('pyqtgraph example: GraphicsLayout')
+        self.view.resize(800,600)
         self.plot_list = []
-        self.redraw_list = []
-        self.stream_data = None      
-        self.xlim = kwargs.get('xlim', (0, 500))
-        self.ylim = kwargs.get('ylim', (-100, 100))
-        self.interval = kwargs.get('interval', 1)
-        self.read_size = kwargs.get('read_size', 1)
-        self.autoscale = kwargs.get('autoscale', True)
 
     def open_stream(self):
         self.stream.open()
@@ -34,54 +30,35 @@ class BasePlot(object):
         self.close_stream()
 
     def plot_init(self):
-        trial_data = self.stream.readline().rstrip().split()
-        for i in xrange(1, len(trial_data) + 1):
-            axes = self.fig.add_subplot(len(trial_data), 1, i)
-            axes.set_xlim(self.xlim[0], self.xlim[1])
-            axes.set_ylim(self.ylim[0], self.ylim[1])
-            axes.autoscale(enable=self.autoscale, axis='y')
-            axes.grid(True)
-            line_data = np.zeros(self.xlim[1])
-            line, = axes.plot([], [])
-            line.set_data(np.arange(self.xlim[1]), line_data)
-            self.plot_list.append([axes, line, line_data])
-        self.stream_data = np.empty([len(trial_data), self.read_size])
-        self.redraw_list = [x[1] for x in self.plot_list]
-        return self.redraw_list
+        for i in xrange(20):
+            trial_data = self.stream.readline().rstrip().split(',')
+        for i in xrange(len(trial_data)):
+            new_plot = self.layout.addPlot()
+            new_plot.plot(np.zeros(250))
+            self.plot_list.append(new_plot.listDataItems()[0])
+            self.layout.nextRow()
         
-    def plot_animate(self, fn):
-        for index in xrange(self.read_size):
-            self.stream_data[:,index] = self.stream.readline().rstrip().split()
-        for data, plot in zip(self.stream_data, self.plot_list):
-            plot[0].relim()
-            plot[0].autoscale_view(tight=True)
-            try:
-                if(self.read_size < plot[0].get_xlim()[1]):
-                    plot[1]._yorig = np.roll(plot[1]._yorig, -self.read_size)
-                    plot[1]._yorig[-self.read_size:] = data
-                else:
-                    plot[1]._yorig = data
-                plot[1]._invalidy = True
-            except ValueError:
-                pass
-            except Exception, message:
-                print message
-                return 
-        return self.redraw_list
+    def update(self):
+        stream_data = self.stream.readline().rstrip().split(',')
+        for data, line in zip(stream_data, self.plot_list):
+            line.informViewBoundsChanged()
+            line.xData = np.arange(len(line.yData))
+            line.yData = np.roll(line.yData, -1)
+            line.yData[-1] = data
+            line.xClean = line.yClean = None
+            line.xDisp = None
+            line.yDisp = None
+            line.updateItems()
+            line.sigPlotChanged.emit(line)
  
     def start(self):
-        try:
-            self.open_stream()
-            animated_plot = animation.FuncAnimation(
-                self.fig, 
-                self.plot_animate, 
-                init_func=self.plot_init,
-                interval=self.interval,
-                blit=not self.autoscale)
-            self.fig.show()
-        except Exception, message:
-            print message
-            self.close_stream()       
+        self.open_stream()
+        self.plot_init()
+        timer = QtCore.QTimer()
+        timer.timeout.connect(self.update)
+        timer.start(0)   
+        if (sys.flags.interactive != 1) or not hasattr(QtCore, 'PYQT_VERSION'):
+            QtGui.QApplication.instance().exec_()   
 
 class SerialPlot(BasePlot):
     def __init__(self, com_port, baud_rate, **kwargs):
@@ -91,17 +68,13 @@ class SerialPlot(BasePlot):
         super(SerialPlot, self).__init__(self.serial_port, **kwargs)
 
 class SocketClientPlot(BasePlot):
-    def __init__(self, address, port, socket=None, **kwargs):
-        if not socket:
-            self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.socket.settimeout(5)
-            self.socket_params = (address, port)
-            self.socket.connect((address, port))
-        else:
-            self.socket_params = address
-            self.socket = socket  
+    def __init__(self, address, port, **kwargs):
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.settimeout(5)
+        self.socket_params = (address, port)
+        self.socket.connect((address, port))
         self.stream = self.socket.makefile()  
-        super(SocketPlot, self).__init__(self.stream, **kwargs)
+        super(SocketClientPlot, self).__init__(self.stream, **kwargs)
         
     def open_stream(self):
         pass

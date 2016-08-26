@@ -18,7 +18,9 @@ class Server(asyncore.dispatcher):
         print "Connected to " + str(addr)
         while(1):
             try:
-                client.send(str(50 * np.sin(data[0])) + " " + str(20*data[0]) + '\n')
+                a = round(50 * np.sin(data[0]), 3)
+                b = round(20*data[0], 3)
+                client.send(str(a) + "," + str(b) + '\n')
                 data = np.roll(data, 1)
                 time.sleep(0.05)
             except Exception, message:
