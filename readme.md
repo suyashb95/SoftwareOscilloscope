@@ -54,10 +54,8 @@ Takes a generic stream and sets custom parameters
 ```
 
 ### Demos
-
-Serial Plot
 ![alt tag](http://imgur.com/zu63yun.gif)  
-Plotting x,y,z data from a 9DOF IMU     
+Plotting x,y,z data from a 9DOF IMU over a serial port.   
 
 
 ### Contributions
