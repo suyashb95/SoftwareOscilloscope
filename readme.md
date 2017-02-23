@@ -1,9 +1,9 @@
 # Software Oscilloscope
-An ongoing python project which takes in data from any stream(Serial port, TCP socket or any generic stream) and plot it in real time using PyQtGraph. The stream must implement open(), close() and readline() methods 
+A python project which takes in data from any stream(Serial port, TCP socket or any generic stream) and plots it in real time using PyQtGraph. The stream must implement open(), close() and readline() methods 
 to work with the package.
 
 ## Installation
-* Requires Python 2
+* Works with Python 2/3
 * Clone the repo or download the zip
 * Install VC++ for Python from [here](https://www.microsoft.com/en-in/download/details.aspx?id=44266)
 * `cd` to the folder
