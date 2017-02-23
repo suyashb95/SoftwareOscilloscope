@@ -34,10 +34,8 @@ class BasePlot(object):
         print("Stream closed")
         
     def handle_close_event(self, event):
-        print("Here")
         self.close_stream()
         self.app.exit()
-        print("App exited")
 
     def plot_init(self):
         for i in xrange(20):
