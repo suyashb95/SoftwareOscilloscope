@@ -1,16 +1,23 @@
-import serial, socket, sys
-from pyqtgraph.Qt import QtGui, QtCore
+import serial
+import socket
+import sys
+from PyQt5.QtWidgets import QApplication 
+from PyQt5 import QtCore
 import pyqtgraph as pg
 import numpy as np
-import signal 
+
+PY3 = True
+if sys.version_info.major == 2:
+    PY3 = False
+
 
 class BasePlot(object):
     def __init__(self, stream, **kwargs):
         self.stream = stream
         try:
-            self.app = QtGui.QApplication([])
+            self.app = QApplication([])
         except RuntimeError:
-            self.app = QtGui.QApplication.instance()
+            self.app = QApplication.instance()
         self.view = pg.GraphicsView()
         self.layout = pg.GraphicsLayout(border=(100,100,100))
         self.view.closeEvent = self.handle_close_event
@@ -37,17 +44,24 @@ class BasePlot(object):
         self.close_stream()
         self.app.exit()
 
+    def readline(self):
+        global PY3
+        if PY3:
+            return self.stream.readline().decode('utf8', errors='ignore').rstrip()
+        else:
+            return self.stream.readline().rstrip()
+
     def plot_init(self):
-        for i in xrange(20):
-            trial_data = self.stream.readline().rstrip().split(',')
-        for i in xrange(len(trial_data)):
+        for i in range(20):
+            trial_data = self.readline().split(',')
+        for i in range(len(trial_data)):
             new_plot = self.layout.addPlot()
             new_plot.plot(np.zeros(250))
             self.plot_list.append(new_plot.listDataItems()[0])
             self.layout.nextRow()
         
     def update(self):
-        stream_data = self.stream.readline().rstrip().split(',')
+        stream_data = self.readline().split(',')
         for data, line in zip(stream_data, self.plot_list):
             line.informViewBoundsChanged()
             line.xData = np.arange(len(line.yData))
@@ -97,4 +111,4 @@ class GenericPlot(BasePlot):
         and hasattr(stream, 'readline'):
             super(GenericPlot, self).__init__(stream, **kwargs)
         else:
-            raise BadAttributeError("One of the open/close/readline attributes is missing")  
+            raise AttributeError("One of the open/close/readline attributes is missing")  
