@@ -1,4 +1,4 @@
 pyqtgraph==0.9.10
 PySide==1.2.4
 pyserial==2.7
-numpy==1.10.1
+numpy==1.21.0
